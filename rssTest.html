@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postimees RSS Feed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #rss-feed {
+            margin-top: 20px;
+        }
+        .item {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+        .item a {
+            font-size: 18px;
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .item a:hover {
+            text-decoration: underline;
+        }
+        .item p {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Postimees RSS Feed</h1>
+    <div id="rss-feed">Loading feed...</div>
+
+    <script>
+        // Use a CORS proxy to bypass CORS restrictions
+        
+        const rssFeedUrl = 'https://crossorigin.me/https://www.postimees.ee/rss';
+
+
+
+        // Function to fetch and parse the RSS feed
+        function fetchRSS() {
+            fetch(rssFeedUrl)
+                .then(response => response.text())
+                .then(data => {
+                    // Use regex to extract items from the raw RSS XML data
+                    const items = data.match(/<item>(.*?)<\/item>/gs);
+                    const feedContainer = document.getElementById('rss-feed');
+                    feedContainer.innerHTML = ''; // Clear loading message
+                    
+                    if (items && items.length > 0) {
+                        items.forEach(item => {
+                            const title = item.match(/<title>(.*?)<\/title>/s)[1];
+                            const link = item.match(/<link>(.*?)<\/link>/s)[1];
+                            const description = item.match(/<description>(.*?)<\/description>/s)?.[1] || 'No description available.';
+
+                            const itemElement = document.createElement('div');
+                            itemElement.classList.add('item');
+
+                            itemElement.innerHTML = `
+                                <a href="${link}" target="_blank">${title}</a>
+                                <p>${description}</p>
+                            `;
+
+                            feedContainer.appendChild(itemElement);
+                        });
+                    } else {
+                        feedContainer.innerHTML = 'No items found.';
+                    }
+                })
+                .catch(err => {
+                    const feedContainer = document.getElementById('rss-feed');
+                    feedContainer.innerHTML = 'Failed to load RSS feed.';
+                    console.error('Error fetching or parsing RSS feed', err);
+                });
+        }
+
+        fetchRSS();
+    </script>
+</body>
+</html>
